@@ -45,7 +45,7 @@ void do_asciiart()
    char * consoleRev = "";
    char * processorRev = "";
 
-   printf("   XeLL Medallion BIOS v6.0, An Energy Star Ally\n   Copyright (C) 2007-2025 " BLAME ", free60.org\n\n" );
+   printf("   XeLL Medallion BIOS v6.0, An Energy Star Ally\n   Copyright (C) 2007-2025 " BLAME ", Free60.org, Octal450, Et al.\n\n" );
 
    for(int i = 0; i<BIOSLOGO_HEIGHT; i++)
    {
@@ -98,6 +98,9 @@ void do_asciiart()
        processorRev = "Vejle";
     } else if (xenon_get_console_type() == 7) {
 	    consoleRev = "Winchester";
+       processorRev = "Oban";
+    } else if (xenon_get_console_type() == 8) {
+	    consoleRev = "Winchester MMC";
        processorRev = "Oban";
     } else{
 	    consoleRev = "Unknown";
@@ -340,13 +343,16 @@ int main(){
 
 	printf(FUSES);
 
-	print_cpu_dvd_keys();
-
+   printf("\n");
+   
    printf(" * CB LDV: %d\n", cbldvcount);
-   printf(" * CF/CG LDV: %d\n\n", fgldvcount);
+   printf(" * CF/CG LDV: %d\n", fgldvcount);
+
+	print_cpu_dvd_keys();
 
 	network_print_config();
 
+   printf("\n");
 
 #endif
 	/* Stop logging and save it to first USB Device found that is writeable */
@@ -369,13 +375,20 @@ int main(){
 	ip4_addr_set_u32(&fallback_address, 0xC0A8015A); // 192.168.1.90
 
 	for(;;){
-		fileloop();
-
-		console_clrline();
+      printf("Scanning for boot devices...");
 
       console_close();
       usb_do_poll();
+      mount_all_devices();
       console_open();
+
+      delay(1);
+
+      console_clrline();
+
+		fileloop();
+
+		console_clrline();
 	}
 
 	return 0;
