@@ -31,7 +31,10 @@
 #include "asciiart.h"
 #include "config.h"
 #include "file.h"
+
+#ifdef FS_TFTP
 #include "tftp/tftp.h"
+#endif
 
 #include "log.h"
 
@@ -211,12 +214,23 @@ int main(){
 	ip_addr_t fallback_address;
 	ip4_addr_set_u32(&fallback_address, 0xC0A8015A); // 192.168.1.90
 
+#ifdef FS_TFTP
 	printf("\n * Looking for files on TFTP...\n\n");
-	for(;;){
-		tftp_loop(boot_server_name()); //less likely to find something...
-		tftp_loop(fallback_address);
+#endif
+
+   for(;;){
+      #ifdef FS_TFTP
+         //less likely to find something...
+		   tftp_loop(boot_server_name());
+		   tftp_loop(fallback_address);
+      #else
+         // If TFTP support isn't enabled
+         // the network still needs to be
+         // poll'ed for the web interface 
+         network_poll();
+      #endif
+
 		fileloop();
-		
 		console_clrline();
 	}
 

@@ -14,12 +14,12 @@
 //#define NO_DVD				//commented to actually use the DVD...
 
 /* Filesystem drivers */
-
 #define FS_ISO9660
 #define FS_FAT
 //#define FS_EXT2FS
 #define FS_XTAF
 //#define FS_NTFS
+#define FS_TFTP
 
 void mount_all_devices();
 
