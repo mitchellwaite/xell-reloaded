@@ -178,8 +178,8 @@ int main(){
     /*int device_list_size = */ findDevices();
 
     console_clrscr();
-    printf(" ______________________________________\n|                                      |\n|  XeLL RELOADED - Xenon Linux Loader  |\n|______________________________________|\n"); // Fancy
-    
+    printf(miniart, "XeLL RELOADED - Xenon Linux Loader version " VERSION);
+
 #ifndef NO_PRINT_CONFIG
     printf("\n * FUSES - write them down and keep them safe:\n");
     char *fusestr = FUSES;
@@ -221,14 +221,13 @@ int main(){
     printf(FUSES);
     
     print_cpu_dvd_keys();
-    print_serials();
     
     printf(" * CPU PVR: %08x\n", mfspr(287));
     
     if (xenon_get_console_type() == 0) {
 	    printf(" * Console: Xenon\n");
     } else if (xenon_get_console_type() == 1) {
-	    printf(" * Console: Xenon/Zephyr\n");
+	    printf(" * Console: Zephyr\n");
     } else if (xenon_get_console_type() == 2) {
 	    printf(" * Console: Falcon\n");
     } else if (xenon_get_console_type() == 3) {
@@ -241,6 +240,8 @@ int main(){
 	    printf(" * Console: Corona MMC\n");
     } else if (xenon_get_console_type() == 7) {
 	    printf(" * Console: Winchester - how did you get here???\n");
+    } else if (xenon_get_console_type() == 8) {
+	    printf(" * Console: Winchester MMC - how did you get here???\n");
     } else if (xenon_get_console_type() == -1) {
 	    printf(" * Console: Unknown\n");
     }
