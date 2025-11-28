@@ -386,10 +386,12 @@ int main(){
 #endif
 
    for(;;){
+      console_close();
+
       #ifndef NO_TFTP
          //less likely to find something...
-		   tftp_loop(boot_server_name());
-		   tftp_loop(fallback_address);
+         tftp_loop(boot_server_name());
+         tftp_loop(fallback_address);
       #else
          // If TFTP support isn't enabled
          // the network still needs to be
@@ -397,10 +399,14 @@ int main(){
          network_poll();
       #endif
 
-		fileloop();
-		console_clrline();
-	}
+      usb_do_poll();
+      mount_all_devices();
+      console_open();
 
-	return 0;
+      fileloop();
+      console_clrline();
+   }
+
+   return 0;
 }
 
