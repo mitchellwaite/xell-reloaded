@@ -132,7 +132,7 @@ endif
 	@echo '#define RELEASE "$(RELEASE)"' >> $@
 	@echo '#define BLAME "LibXenon.org"' >> $@
 	@date +'#define DATE "%F"' >> $@
-	@echo '#define GITREV "'$(shell git log --format="%h" HEAD^..HEAD)'"' >> $@
+	@echo '#define GITREV "'$(shell git log -1 --format="%h")'"' >> $@
 #	@echo '#define GITREV ""' >> $@
 	@echo '' >> $@
 	@echo '#define VERSION RELEASE "-git-" GITREV' >> $@
