@@ -31,7 +31,10 @@
 #include "asciiart.h"
 #include "config.h"
 #include "file.h"
+
+#ifndef NO_TFTP
 #include "tftp/tftp.h"
+#endif
 
 #include "log.h"
 
@@ -263,12 +266,27 @@ int main(){
     //}
     
     mount_all_devices();
-    printf("\n * Looking for files on local media and TFTP...\n\n");
+#ifndef NO_TFTP
+    printf("\n * Looking for files on TFTP and local media...\n\n");
+#else
+    printf("\n * Looking for files on local media...\n\n");
+#endif
+
     for(;;){
-	    fileloop();
-	    tftp_loop(); //less likely to find something...
-	    console_clrline();
-	    usb_do_poll(); // Refresh USB
+        fileloop();
+
+        #ifndef NO_TFTP
+            //less likely to find something...
+            tftp_loop(); 
+        #else
+            // If TFTP support isn't enabled
+            // the network still needs to be
+            // polled for the web interface 
+            network_poll();
+        #endif
+
+        console_clrline();
+        usb_do_poll(); // Refresh USB
     }
 
     return 0;
