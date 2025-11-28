@@ -42,7 +42,7 @@ void do_asciiart() {
     char *p = asciiart;
     while (*p)
 	    console_putch(*p++);
-    printf(asciitail);
+    printf("%s\n\n", asciitail);
 }
 
 void dumpana() {
@@ -178,7 +178,7 @@ int main(){
     /*int device_list_size = */ findDevices();
 
     console_clrscr();
-    printf(miniart, "XeLL RELOADED - Xenon Linux Loader version " VERSION);
+    printf(miniart, asciitail, "Version " LONGVERSION);
 
 #ifndef NO_PRINT_CONFIG
     printf("\n * FUSES - write them down and keep them safe:\n");

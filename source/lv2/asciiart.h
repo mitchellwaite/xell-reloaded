@@ -19,10 +19,10 @@ static char* asciiart = "\n"
 	"  ฒฒ  ÞฒÝ   ÞฒÝ ÞฒÝ  ฒฒ      ÞฒÝ  ÞฒÝ  ฒฒ   ฒฒ  ฒฒ  ÞฒÝ  ÞฒÝ ÞฒÝ  ฒฒ  ÞฒÝ\n"
 	"  ÛÛ   ÛÛ    ฿ÛÜÛ฿   ÛÛ       ฿ÛÜÜÛ฿   ÛÛ   ÛÛ  ÛÛ ÜÛ฿    ฿ÛÜÛ฿   ÛÛ ÜÛ฿\n"
 	"  ฿฿   ฿฿      ฿     ฿฿฿฿฿฿฿    ฿฿     ฿฿   ฿฿   ฿฿฿        ฿      ฿฿฿\n\n";
-static char* asciitail =
-	"              Free60.org XeLL RELOADED - Xenon Linux Loader\n\n";
+static char* asciitail = "Free60.org XeLL RELOADED - Xenon Linux Loader";
 
 static char* miniart =
 "ษออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป\n"   
+"บ %-62s บ\n"
 "บ %-62s บ\n"
 "ศออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ\n";
