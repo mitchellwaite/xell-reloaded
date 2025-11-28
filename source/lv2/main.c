@@ -31,7 +31,10 @@
 #include "asciiart.h"
 #include "config.h"
 #include "file.h"
+
+#ifndef NO_TFTP
 #include "tftp/tftp.h"
+#endif
 
 #include "log.h"
 
@@ -376,20 +379,25 @@ int main(){
 	ip_addr_t fallback_address;
 	ip4_addr_set_u32(&fallback_address, 0xC0A8015A); // 192.168.1.90
 
-   printf("Scanning for boot devices...\n");
+#ifndef NO_TFTP
+	printf("\n * Looking for files on TFTP and local media...\n\n");
+#else
+	printf("\n * Looking for files on local media...\n\n");
+#endif
 
-	for(;;){
-
-      console_close();
-      network_poll();
-      usb_do_poll();
-      mount_all_devices();
-      console_open();
-
-      console_clrline();
+   for(;;){
+      #ifndef NO_TFTP
+         //less likely to find something...
+		   tftp_loop(boot_server_name());
+		   tftp_loop(fallback_address);
+      #else
+         // If TFTP support isn't enabled
+         // the network still needs to be
+         // polled for the web interface 
+         network_poll();
+      #endif
 
 		fileloop();
-
 		console_clrline();
 	}
 
