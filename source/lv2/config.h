@@ -12,9 +12,9 @@
 //#define NO_PRINT_CONFIG         //commented to display config
 //#define NO_NETWORKING		//commented to actually use networking...
 //#define NO_DVD				//commented to actually use the DVD...
+//#define NO_TFTP
 
 /* Filesystem drivers */
-
 #define FS_ISO9660
 #define FS_FAT
 //#define FS_EXT2FS
