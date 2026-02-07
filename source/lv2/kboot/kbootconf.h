@@ -36,7 +36,7 @@ struct kbootconf {
 	struct kbootkernel kernels[MAX_KERNELS];
 };
 
-int kbootconf_parse(void);
-int try_kbootconf(void * addr, unsigned len);
+int kbootconf_parse(char *kbootFilename);
+int try_kbootconf(void * addr, unsigned len, char *filename);
 
 #endif

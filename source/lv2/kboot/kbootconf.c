@@ -135,7 +135,7 @@ void kboot_set_config(void)
         
 }
 
-int kbootconf_parse(void)
+int kbootconf_parse(char *kbootFilename)
 {
 	char *lp = conf_buf;
 	char *dflt = NULL;
@@ -210,6 +210,15 @@ int kbootconf_parse(void)
 				PRINT_WARN("kboot.conf: maximum length exceeded (line %d)\n", lineno);
 				goto nextline;
 			}
+
+			// We've got a relative path "game:/...". Replace "game"
+			// with the actual prefix where the file was found, e.g.
+			// sda1, uda0, dvd0, etc. Prefixes are guaranteed to be 4 chars
+			if(NULL != kbootFilename && strncmp(right, "game:", 5) == 0)
+			{
+				memcpy(right, kbootFilename, 4);
+			}
+
 			conf.kernels[conf.num_kernels].label = left;
                         conf.kernels[conf.num_kernels].kernel = right;
                         
@@ -441,7 +450,7 @@ printf("\nTimeout.\n");
 return defaultchoice;
 }
 
-int try_kbootconf(void * addr, unsigned len){
+int try_kbootconf(void * addr, unsigned len, char *filename){
     int ret;
     if (len > MAX_KBOOTCONF_SIZE)
     {
@@ -453,7 +462,7 @@ int try_kbootconf(void * addr, unsigned len){
     memcpy(conf_buf,addr,len);
     conf_buf[len] = 0; //ensure null-termination
     
-    kbootconf_parse();
+    kbootconf_parse(filename);
     kboot_set_config();
     
     if (conf.num_kernels == 0){
