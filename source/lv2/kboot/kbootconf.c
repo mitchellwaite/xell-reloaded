@@ -68,15 +68,42 @@ void split(char *buf, char **left, char **right, char delim)
 	}
 }
 
-int kboot_loadfile(char *filename, int type)
+int kboot_loadfile(char *filename, int type, char *kbootpath)
 {
 	int ret;
+
+	char relativepath[255] = {'\0'};
+
 	/* If filename includes ':' it's seen as valid mountname */
 	if(strrchr(filename,':')!= NULL)
+	{
 		ret = try_load_file(filename,type);
+	}
 	else
-		ret = boot_tftp(boot_server_name(),filename,type);
-		
+	{
+		// If a kboot path was provided, try loading the file
+		// from the same mount path as the kboot.conf
+		if(NULL != kbootpath)
+		{
+			// Copy the prefix (e.g. "uda0:/", "dvd0:/", and then concatenate
+			// the filename. If the filename begins with /, copy one less
+			// character from the prefix so we don't have a double slash
+			memcpy(relativepath, kbootpath, (filename[0] == '/') ? 5 : 6);
+			strncat(relativepath, filename, sizeof(relativepath) - 1);
+
+			ret = try_load_file(relativepath, type);
+		}
+
+#ifndef NO_TFTP
+		// If we failed to load the file, or a kbootpath wasn't provided,
+		// try to boot the provided filename from TFTP
+		if(ret || NULL == kbootpath)
+		{
+			ret = boot_tftp(boot_server_name(),filename,type);
+		}
+#endif
+	}
+
 	return ret;
 }
 
@@ -135,7 +162,7 @@ void kboot_set_config(void)
         
 }
 
-int kbootconf_parse(char *kbootFilename)
+int kbootconf_parse()
 {
 	char *lp = conf_buf;
 	char *dflt = NULL;
@@ -209,14 +236,6 @@ int kbootconf_parse(char *kbootFilename)
 			if (strlen(right) > MAX_CMDLINE_SIZE) {
 				PRINT_WARN("kboot.conf: maximum length exceeded (line %d)\n", lineno);
 				goto nextline;
-			}
-
-			// We've got a relative path "game:/...". Replace "game"
-			// with the actual prefix where the file was found, e.g.
-			// sda1, uda0, dvd0, etc. Prefixes are guaranteed to be 4 chars
-			if(NULL != kbootFilename && strncmp(right, "game:", 5) == 0)
-			{
-				memcpy(right, kbootFilename, 4);
 			}
 
 			conf.kernels[conf.num_kernels].label = left;
@@ -450,7 +469,7 @@ printf("\nTimeout.\n");
 return defaultchoice;
 }
 
-int try_kbootconf(void * addr, unsigned len, char *filename){
+int try_kbootconf(void * addr, unsigned len, char *kbootpath){
     int ret;
     if (len > MAX_KBOOTCONF_SIZE)
     {
@@ -462,7 +481,7 @@ int try_kbootconf(void * addr, unsigned len, char *filename){
     memcpy(conf_buf,addr,len);
     conf_buf[len] = 0; //ensure null-termination
     
-    kbootconf_parse(filename);
+    kbootconf_parse();
     kboot_set_config();
     
     if (conf.num_kernels == 0){
@@ -493,7 +512,7 @@ int try_kbootconf(void * addr, unsigned len, char *filename){
     if (conf.kernels[boot_entry].initrd)
     {
         printf("Loading initrd ... ");
-        ret = kboot_loadfile(conf.kernels[boot_entry].initrd,TYPE_INITRD);
+        ret = kboot_loadfile(conf.kernels[boot_entry].initrd,TYPE_INITRD, kbootpath);
         if (ret < 0) {
 			printf("Failed!\nAborting!\n");
 			return -1;
@@ -503,7 +522,7 @@ int try_kbootconf(void * addr, unsigned len, char *filename){
     }
 
     printf("Loading kernel ...\n");
-    ret = kboot_loadfile(conf.kernels[boot_entry].kernel,TYPE_ELF);
+    ret = kboot_loadfile(conf.kernels[boot_entry].kernel,TYPE_ELF, kbootpath);
     if (ret < 0)
 		printf("Failed!\n");
                 
