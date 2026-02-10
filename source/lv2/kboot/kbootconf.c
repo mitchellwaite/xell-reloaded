@@ -28,6 +28,7 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #include "tftp/tftp.h"
 #include "kbootconf.h"
 #include "file.h"
+#include "config.h"
 
 int boot_entry;
 char conf_buf[MAX_KBOOTCONF_SIZE];
@@ -71,11 +72,16 @@ void split(char *buf, char **left, char **right, char delim)
 int kboot_loadfile(char *filename, int type)
 {
 	int ret;
-	/* If filename includes ':' it's seen as valid mountname */
-	if(strrchr(filename,':')!= NULL)
+
+	#ifndef NO_TFTP
+		/* If filename includes ':' it's seen as valid mountname */
+		if(strrchr(filename,':')!= NULL)
+			ret = try_load_file(filename,type);
+		else
+			ret = boot_tftp(boot_server_name(),filename,type);
+	#else
 		ret = try_load_file(filename,type);
-	else
-		ret = boot_tftp(boot_server_name(),filename,type);
+	#endif
 		
 	return ret;
 }
@@ -91,6 +97,7 @@ void kboot_set_config(void)
 		if (ipaddr_aton(conf.tftp_server,&tftpserver))
 			kboot_tftp = conf.tftp_server;
 
+#ifndef NO_NETWORKING
         /* Only reinit network if IPs dont match which got set by kboot on previous try*/
 	if(conf.ipaddress != NULL)
         	if (ipaddr_aton(conf.ipaddress,&ipaddr) && ip_addr_cmp(&oldipaddr,&ipaddr) == 0)
@@ -120,7 +127,8 @@ void kboot_set_config(void)
            netif_set_up(&netif);
            network_print_config();
         }
-        
+#endif
+
         if(conf.videomode > VIDEO_MODE_AUTO && conf.videomode <= VIDEO_MODE_NTSC && oldvideomode != conf.videomode){
             oldvideomode = conf.videomode;
             xenos_init(conf.videomode);
