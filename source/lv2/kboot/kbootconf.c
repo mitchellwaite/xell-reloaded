@@ -87,17 +87,21 @@ int kboot_loadfile(char *filename, int type)
 }
 
 void kboot_set_config(void)
-{
-        
-        int setnetconfig = 0;
-        static int oldvideomode = -1;
-        ip_addr_t ipaddr, netmask, gateway, tftpserver;
-        
+{    
+	static int oldvideomode = -1;
+
+#ifndef NO_NETWORKING
+	int setnetconfig = 0;
+	ip_addr_t ipaddr, netmask, gateway;
+
+#ifndef NO_TFTP
+	ip_addr_t tftpserver;
+
 	if(conf.tftp_server != NULL)
 		if (ipaddr_aton(conf.tftp_server,&tftpserver))
 			kboot_tftp = conf.tftp_server;
+#endif
 
-#ifndef NO_NETWORKING
         /* Only reinit network if IPs dont match which got set by kboot on previous try*/
 	if(conf.ipaddress != NULL)
         	if (ipaddr_aton(conf.ipaddress,&ipaddr) && ip_addr_cmp(&oldipaddr,&ipaddr) == 0)
