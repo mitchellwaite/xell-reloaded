@@ -443,7 +443,10 @@ int user_prompt(int defaultchoice, int max, int timeout) {
         redraw = 1;
         }
 
+#ifndef NO_NETWORKING
     network_poll();
+#endif
+
     usb_do_poll();
 
     if(old_default != defaultchoice)
