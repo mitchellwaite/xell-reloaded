@@ -162,7 +162,7 @@ void kboot_set_config(void)
         
 }
 
-int kbootconf_parse()
+int kbootconf_parse(void)
 {
 	char *lp = conf_buf;
 	char *dflt = NULL;
@@ -237,7 +237,6 @@ int kbootconf_parse()
 				PRINT_WARN("kboot.conf: maximum length exceeded (line %d)\n", lineno);
 				goto nextline;
 			}
-
 			conf.kernels[conf.num_kernels].label = left;
                         conf.kernels[conf.num_kernels].kernel = right;
                         
