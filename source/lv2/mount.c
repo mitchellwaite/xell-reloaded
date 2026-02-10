@@ -135,8 +135,7 @@ typedef struct _EXTENDED_BOOT_RECORD {
 	u16 signature; /* EBR signature; 0xAA55 */
 } __attribute__((__packed__)) EXTENDED_BOOT_RECORD;
 
-// kboot.conf assumes partition prefixes are exactlty 4 characters to avoid
-// needing to do a memory allocation to handle relative paths.
+// kboot.conf assumes partition prefixes are exactly 4 characters.
 // If MAX_DEVICES is ever increased beyond 10, i.e. we might have 5 character
 // prefixes like uda11, the prefix logic in kboot.conf will need to be updated. 
 #define MAX_DEVICES 10
