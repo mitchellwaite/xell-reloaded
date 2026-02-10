@@ -193,7 +193,11 @@ int main(){
 	printf(FUSES);
 
 	print_cpu_dvd_keys();
+
+#ifndef NO_NETWORKING
 	network_print_config();
+#endif
+
 #endif
 	/* Stop logging and save it to first USB Device found that is writeable */
 	LogDeInit();
