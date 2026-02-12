@@ -364,9 +364,12 @@ int main(){
 
    //printf(" * P:0x%08X, X:0x%08X, D:0x%08X, V:0x%08X\n\n",xenon_get_PCIBridgeRevisionID(),xenon_get_XenosID(),xenon_get_DVE(),xenon_get_CPU_PVR());
 
+#ifndef NO_NETWORKING
 	network_print_config();
 
    printf("\n");
+
+#endif
 
 #endif
 	/* Stop logging and save it to first USB Device found that is writeable */
@@ -385,28 +388,31 @@ int main(){
 	//}
 	
 	// mount_all_devices();
-	ip_addr_t fallback_address;
-	ip4_addr_set_u32(&fallback_address, 0xC0A8015A); // 192.168.1.90
-
 #ifndef NO_TFTP
+	// Set the fallback TFTP address
+	ip_addr_t tftp_fallback_address;
+	ip4_addr_set_u32(&tftp_fallback_address, 0xC0A8015A); // 192.168.1.90
+
 	printf("Scanning for boot devices on TFTP and local media...\n");
 #else
 	printf("Scanning for boot devices...\n");
 #endif
 
-   for(;;){
+	for(;;){
       console_close();
 
-      #ifndef NO_TFTP
-         //less likely to find something...
-         tftp_loop(boot_server_name());
-         tftp_loop(fallback_address);
-      #else
-         // If TFTP support isn't enabled
-         // the network still needs to be
-         // polled for the web interface 
-         network_poll();
-      #endif
+		#ifndef NO_TFTP
+			//less likely to find something...
+			tftp_loop(boot_server_name());
+			tftp_loop(tftp_fallback_address);
+		#else
+			#ifndef NO_NETWORKING
+			// If TFTP support isn't enabled but networking
+			// still is enabled, the network needs to be
+			// polled for the web interface to function correctly
+			network_poll();
+			#endif
+		#endif
 
       usb_do_poll();
       mount_all_devices();
