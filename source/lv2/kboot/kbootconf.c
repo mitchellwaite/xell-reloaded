@@ -131,7 +131,8 @@ void kboot_set_config(void)
            netif_set_up(&netif);
            network_print_config();
         }
-        
+#endif
+
         if(conf.videomode > VIDEO_MODE_AUTO && conf.videomode < VIDEO_MODE_COUNT && oldvideomode != conf.videomode){
             oldvideomode = conf.videomode;
             xenos_init(conf.videomode);
