@@ -117,6 +117,18 @@ void do_asciiart()
 
    memSizeK = xenon_get_ram_size() / 0x400; 
    
+   printf("Memory Test :  ");
+
+   int cur_x_pos = console_get_cursor_x();
+
+   for(uint32_t i = 0;i<memSizeK;i+=0x8000)
+   {
+      console_clear_to_eol(cur_x_pos);
+      printf("%dK",i);
+      mdelay(100);
+   }
+
+   console_clrline();
    printf("Memory Test :  %dK OK\n\n",memSizeK);
 }
 

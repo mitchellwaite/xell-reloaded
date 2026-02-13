@@ -28,7 +28,7 @@ BINUTILS_VERSION = $(shell $(PREFIX)ld --version | grep ld | awk '{print $$5}')
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -ffunction-sections -fdata-sections -g -Os -Wall $(MACHDEP) $(INCLUDE)
+CFLAGS	= -ffunction-sections -fdata-sections -g -Os -Wall -Werror-implicit-function-declaration $(MACHDEP) $(INCLUDE)
 CXXFLAGS	=	$(CFLAGS)
 ASFLAGS		=	-m32
 

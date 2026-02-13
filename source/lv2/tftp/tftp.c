@@ -34,6 +34,8 @@
 #define TFTP_OPCODE_ERROR 5
 #define TFTP_OPCODE_OACK 6
 
+#ifndef NO_TFTP
+
 typedef struct {
   int state;
   int result;
@@ -470,3 +472,5 @@ char *boot_file_name() {
 
   return "/tftpboot/xenon";
 }
+
+#endif

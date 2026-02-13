@@ -23,7 +23,7 @@
 
 #include <xenon_smc/xenon_smc.h> //For reboot and shutdown commands
 #include <time/time.h> //For delay...
-extern void console_clrline();
+#include <console/console.h>
 
 #define hdprintf(x...)
 // fprintf(stderr, x)
