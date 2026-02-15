@@ -47,8 +47,13 @@ void do_asciiart()
 
    char * consoleRev = "";
    char * processorRev = "";
+   char copyrightString[0x38];
 
-   printf("   XeLL Medallion BIOS v6.0, An Energy Star Ally\n   Copyright (C) 2007-2025 " BLAME ", Free60.org, Octal450, Et al.\n\n" );
+   xenon_get_logical_nand_data(copyrightString, 0x12, 0x38);
+
+   printf("   Free60.org XeLL Medallion BIOS v6.0, An Energy Star Ally\n   Copyright (C) " );
+
+   printf("%s\n\n", copyrightString);
 
    for(int i = 0; i<BIOSLOGO_HEIGHT; i++)
    {
@@ -180,6 +185,7 @@ int main(){
 	LogInit();
 	int i;
    int rc = 0;
+   char enableCustomColours = 0;
 
 	printf("ANA Dump before Init:\n");
 	dumpana();
@@ -206,15 +212,31 @@ int main(){
 	printf("ANA Dump after Init:\n");
 	dumpana();
 
+   xenon_get_logical_nand_data(&enableCustomColours, 0x4C, 0x1);
+
+   if(enableCustomColours)
+   {
+      uint32_t bgcolour = 0;
+      uint32_t fgcolour = 0;
+
+      xenon_get_logical_nand_data(&bgcolour, 0x44, 0x4);
+      xenon_get_logical_nand_data(&fgcolour, 0x48, 0x4);
+
+      console_set_colors(bgcolour, fgcolour);
+   }
+   else
+   {
 #ifdef SWIZZY_THEME
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
+	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
 #elif defined XTUDO_THEME
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_PINK); // Pink text on black bg
+	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_PINK); // Pink text on black bg
 #elif defined DEFAULT_THEME
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREY); // White text on blue bg
+	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREY); // White text on blue bg
 #else
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
+	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
 #endif
+   }
+
 	console_init();
 
    delay(2);
