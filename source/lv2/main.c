@@ -47,9 +47,9 @@ void do_asciiart()
 
    char * consoleRev = "";
    char * processorRev = "";
-   char copyrightString[0x38];
+   char copyrightString[0x36];
 
-   xenon_get_logical_nand_data(copyrightString, 0x12, 0x38);
+   xenon_get_logical_nand_data(copyrightString, 0x12, 0x36);
 
    printf("   Free60.org XeLL Medallion BIOS v6.0, An Energy Star Ally\n   Copyright (C) " );
 
@@ -219,8 +219,8 @@ int main(){
       uint32_t bgcolour = 0;
       uint32_t fgcolour = 0;
 
-      xenon_get_logical_nand_data(&bgcolour, 0x44, 0x4);
-      xenon_get_logical_nand_data(&fgcolour, 0x48, 0x4);
+      xenon_get_logical_nand_data(&bgcolour, 0x50, 0x4);
+      xenon_get_logical_nand_data(&fgcolour, 0x54, 0x4);
 
       console_set_colors(bgcolour, fgcolour);
    }
