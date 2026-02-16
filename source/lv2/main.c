@@ -40,10 +40,15 @@
 
 void do_asciiart()
 {
+	char copyrightString[0x36];
+
 	char *p = asciiart;
 	while (*p)
 		console_putch(*p++);
 	printf(asciitail);
+
+	xenon_get_logical_nand_data(copyrightString, 0x12, 0x36);
+	printf("    Copyright (C) %s\n\n",copyrightString);
 }
 
 void dumpana() {
@@ -89,6 +94,7 @@ void synchronize_timebases()
 int main(){
 	LogInit();
 	int i;
+	char enableCustomColours = 0;
 
 	printf("ANA Dump before Init:\n");
 	dumpana();
@@ -115,15 +121,31 @@ int main(){
 	printf("ANA Dump after Init:\n");
 	dumpana();
 
-#ifdef SWIZZY_THEME
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
-#elif defined XTUDO_THEME
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_PINK); // Pink text on black bg
-#elif defined DEFAULT_THEME
-	console_set_colors(CONSOLE_COLOR_BLUE,CONSOLE_COLOR_WHITE); // White text on blue bg
-#else
-	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
-#endif
+	xenon_get_logical_nand_data(&enableCustomColours, 0x4C, 0x1);
+
+	if(enableCustomColours)
+	{
+		uint32_t bgcolour = 0;
+		uint32_t fgcolour = 0;
+
+		xenon_get_logical_nand_data(&bgcolour, 0x50, 0x4);
+		xenon_get_logical_nand_data(&fgcolour, 0x54, 0x4);
+
+		console_set_colors(bgcolour, fgcolour);
+	}
+	else
+	{
+	#ifdef SWIZZY_THEME
+		console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
+	#elif defined XTUDO_THEME
+		console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_PINK); // Pink text on black bg
+	#elif defined DEFAULT_THEME
+		console_set_colors(CONSOLE_COLOR_BLUE,CONSOLE_COLOR_WHITE); // White text on blue bg
+	#else
+		console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
+	#endif
+	}
+
 	console_init();
 
 	printf("\nXeLL - Xenon linux loader second stage " LONGVERSION "\n");
