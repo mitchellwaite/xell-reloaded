@@ -121,7 +121,7 @@ int main(){
 	printf("ANA Dump after Init:\n");
 	dumpana();
 
-	xenon_get_logical_nand_data(&enableCustomColours, 0x4C, 0x1);
+	xenon_get_logical_nand_data(&enableCustomColours, 0x5F, 0x1);
 
 	if(enableCustomColours)
 	{
