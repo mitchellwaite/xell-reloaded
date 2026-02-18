@@ -38,6 +38,20 @@
 
 #include "log.h"
 
+static void byte_to_rgb(uint8_t c,
+                                  uint8_t *r,
+                                  uint8_t *g,
+                                  uint8_t *b)
+{
+    uint8_t r3 = (c >> 5) & 7;
+    uint8_t g3 = (c >> 2) & 7;
+    uint8_t b2 =  c       & 3;
+
+    *r = (r3 << 5) | (r3 << 2) | (r3 >> 1);
+    *g = (g3 << 5) | (g3 << 2) | (g3 >> 1);
+    *b = (b2 << 6) | (b2 << 4) | (b2 << 2) | b2;
+}
+
 void do_asciiart()
 {
 	//char *p = asciiart;
@@ -48,6 +62,8 @@ void do_asciiart()
    char * consoleRev = "";
    char * processorRev = "";
    char copyrightString[0x36];
+
+   uint8_t r, g, b;
 
    xenon_get_logical_nand_data(copyrightString, 0x12, 0x36);
 
@@ -72,14 +88,14 @@ void do_asciiart()
       {
          char nrgpixel = energylogo[(i * ENERGY_WIDTH) + j];
 
-         if(nrgpixel == 0xaa)
+         if(nrgpixel == 0x00)
          {
-            console_pset_right(j, i, 255, 255, 0);
+            // We'll assume 0x0 is transparent
+            continue;
          }
-         else if(nrgpixel == 0x55)
-         {
-            console_pset_right(j, i, 0, 255, 0);
-         }
+
+         byte_to_rgb(nrgpixel, &r, &g, &b);
+         console_pset_right(j, i, r, g, b);
       }
    }
 
