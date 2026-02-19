@@ -349,7 +349,7 @@ int main(){
 
    
 
-	printf("starting httpd server... ");
+	printf("Starting httpd server... ");
 
    console_close();
 	httpd_start();
