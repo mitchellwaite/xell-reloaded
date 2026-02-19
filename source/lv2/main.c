@@ -267,15 +267,42 @@ int main(){
 
 	// FIXME: Not initializing these devices here causes an interrupt storm in
 	// linux.
-   printf("\n");
+	printf("\n");
 	printf("Detecting Primary Master  ... ");
+
+	console_close();
 	xenon_ata_init();
-   printf("Detecting Primary Slave   ... None\n");
+	console_open();
+
+	if(0 != strlen(ata.model))
+	{
+		printf("%s\n", ata.model);
+	}
+	else
+	{
+		printf("None\n");
+	}
+
+	printf("Detecting Primary Slave   ... None\n");
+
 
 #ifndef NO_DVD
 	printf("Detecting Secondary Master... ");
+
+	console_close();
 	xenon_atapi_init();
-   printf("Detecting Secondary Slave ... None\n");
+	console_open();
+
+	if(0 != strlen(atapi.model))
+	{
+		printf("%s\n", atapi.model);
+	}
+	else
+	{
+		printf("None\n");
+	}
+
+	printf("Detecting Secondary Slave ... None\n");
 #endif
 
 	mount_all_devices();
