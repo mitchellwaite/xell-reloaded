@@ -163,6 +163,45 @@ void dumpana() {
 		if ((i&0x7)==0x7)
 			printf(" // %02x\n", (unsigned int)(i &~0x7));
 	}
+
+   printf("\n\n");
+
+   uint32_t is_progressive = xenos_read32(D1CRTC_V_SYNC_B);
+   int interlace_factor = is_progressive ? 1 : 2;
+
+   printf("height: %d\n", xenos_read32(D1GRPH_Y_END));
+   printf("total_height: %d\n", xenos_read32(D1CRTC_H_SYNC_B) + 1);
+
+   // active height, use viewport size to calculate
+   uint32_t viewport_size = xenos_read32(AVIVO_D1MODE_VIEWPORT_SIZE);
+   uint32_t active_height = (viewport_size & 0x0000FFFF) / interlace_factor;
+   printf("active_height: %d\n", active_height);
+
+
+   printf("width: %d\n", xenos_read32(D1GRPH_X_END));
+   printf("total_width: %d\n", xenos_read32(D1CRTC_H_TOTAL) + 1);
+
+   //hsync_offset
+   uint32_t hsync_offset_reg =  xenos_read32(D1CRTC_H_BLANK_START_END);
+   uint32_t hsync_offset = (hsync_offset_reg & 0xFFFF0000) >> 16;
+
+   // use the hsync_offset to calc width
+   uint32_t real_active_width = (hsync_offset_reg & 0x0000FFFF) - hsync_offset;
+   printf("real_active_width: %d\n", real_active_width);
+   printf("hsync_offset: %d\n", hsync_offset);
+
+   //vsync_offset
+   uint32_t vsync_offset_reg =  xenos_read32(D1CRTC_H_SYNC_B_CNTL);
+   uint32_t vsync_offset = (vsync_offset_reg & 0xFFFF0000) >> 16;
+   printf("vsync_offset: %d\n", vsync_offset);
+
+   printf("composite_sync: %d\n", xenos_read32(D1CRTC_MVP_CONTROL2) == 0 ? 0 : 1);
+   printf("is_progressive: %d\n",is_progressive);
+   printf("enable_scaler: %d\n\n\n",xenos_read32(AVIVO_D1SCL_SCALER_ENABLE));
+   //rgb
+   //hdmi
+   //overscan
+
 }
 
 char FUSES[350]; /* this string stores the ascii dump of the fuses */
