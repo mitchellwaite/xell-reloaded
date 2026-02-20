@@ -67,26 +67,15 @@ void do_asciiart()
 
    xenon_get_logical_nand_data(copyrightString, 0x12, 0x36);
 
-   printf("   Free60.org XeLL Medallion BIOS v6.0, An Energy Star Ally\n   Copyright (C) " );
+   printf("\n\n\n\n\n\nFree60.org XeLL BIOS Copyright (C) " );
 
    printf("%s\n\n", copyrightString);
 
-   for(int i = 0; i<BIOSLOGO_HEIGHT; i++)
+   for(int i = 0; i<AMIBIOS_HEIGHT; i++)
    {
-      for(int j = 0; j<BIOSLOGO_WIDTH; j++)
+      for(int j = 0; j<AMIBIOS_WIDTH; j++)
       {
-         if(bioslogo[(i * BIOSLOGO_WIDTH) + j])
-         {
-            console_pset(j, i, 0, 0, 255);
-         }
-      }
-   }
-
-   for(int i = 0; i<ENERGY_HEIGHT; i++)
-   {
-      for(int j = 0; j<ENERGY_WIDTH; j++)
-      {
-         char nrgpixel = energylogo[(i * ENERGY_WIDTH) + j];
+         char nrgpixel = amibios[(i * AMIBIOS_WIDTH) + j];
 
          if(nrgpixel == 0x00)
          {
@@ -95,7 +84,7 @@ void do_asciiart()
          }
 
          byte_to_rgb(nrgpixel, &r, &g, &b);
-         console_pset_right(j, i, r, g, b);
+         console_pset(j, i, r, g, b);
       }
    }
 
@@ -131,14 +120,14 @@ void do_asciiart()
        processorRev = "Unknown";
     }
 
-   printf("Microsoft %s ACPI BIOS Revision " VERSION "\n\n", consoleRev);
-   printf("Microsoft %s %08x 3.2GHz Processor\n", processorRev, mfspr(287));
+   printf("%s BIOS v" VERSION "\n\n", consoleRev);
+   printf("CPU: Microsoft(R) %s(TM) CPU @ 3.2GHz\n Speed: 3200MHz\n\n", processorRev, mfspr(287));
 
    uint32_t memSizeK = 0;
 
    memSizeK = xenon_get_ram_size() / 0x400; 
    
-   printf("Memory Test :  ");
+   printf("Total Memory :  ");
 
    int cur_x_pos = console_get_cursor_x();
 
@@ -150,7 +139,7 @@ void do_asciiart()
    }
 
    console_clrline();
-   printf("Memory Test :  %dK OK\n\n",memSizeK);
+   printf("Total Memory :  %dK (GDDR3-700)\n\n",memSizeK);
 }
 
 void dumpana() {
@@ -268,7 +257,7 @@ int main(){
 	// FIXME: Not initializing these devices here causes an interrupt storm in
 	// linux.
 	printf("\n");
-	printf("Detecting Primary Master  ... ");
+	printf("Detected ATA/ATAPI Devices...\n");
 
 	console_close();
 	xenon_ata_init();
@@ -276,18 +265,11 @@ int main(){
 
 	if(0 != strlen(ata.model))
 	{
-		printf("%s\n", ata.model);
+		printf("SATA Port1: %s\n", ata.model);
 	}
-	else
-	{
-		printf("None\n");
-	}
-
-	printf("Detecting Primary Slave   ... None\n");
-
 
 #ifndef NO_DVD
-	printf("Detecting Secondary Master... ");
+	//printf("Detecting Secondary Master... ");
 
 	console_close();
 	xenon_atapi_init();
@@ -295,14 +277,11 @@ int main(){
 
 	if(0 != strlen(atapi.model))
 	{
-		printf("%s\n", atapi.model);
-	}
-	else
-	{
-		printf("None\n");
+		printf("SATA Port2: %s\n", atapi.model);
 	}
 
-	printf("Detecting Secondary Slave ... None\n");
+
+	//printf("Detecting Secondary Slave ... None\n");
 #endif
 
 	mount_all_devices();
