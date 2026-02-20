@@ -1,0 +1,47 @@
+CPU speed set to full
+
+Detecting Primary Master  ... None
+Detecting Primary Slave   ... None
+Detecting Secondary Master... HL-DT-STDVD-ROM GDR3120L
+Detecting Secondary Slave ... None
+
+NAND init... success
+Network init...  * initializing lwip 1.4.1...
+ * initializing NIC
+Reinit PHY...
+Waiting for link...link up!
+ * requesting dhcp.................................failed
+ * now assigning a static ip
+static ip assigned
+starting httpd server... success
+USB init...  * Initialising USB EHCI...
+Initialising EHCI bus 0 at 0xea003000
+EHCI bus 0 port 1: low speed, releasing to OHCI
+Initialising EHCI bus 1 at 0xea005000
+EHCI bus 1 port 5: low speed, releasing to OHCI
+ * Initialising USB OHCI...
+USB bus 0 device 1: vendor 0000 product 0000 class 09: USB Hub
+USB bus 1 device 1: vendor 0000 product 0000 class 09: USB Hub
+USB: New device connected to bus 0 hub 1 port 1
+ * Xenos FB with 128x48 (1024x768) at 0x9e000000 initialized.
+
+Exception vector! (0x600)
+
+pir=0000000000000000 dar=00000000b3b3d28d
+sr0=000000008001dbf0 sr1=1000000002003030 lr=000000008001dafc
+
+00=000000008000a2e0 08=0000000085d2b333 16=0000000000000000 24=0000000080092360
+01=000000009ddffe10 09=00000000b3b3d285 17=0000000080092330 25=00000000800923a0
+02=800000001c00a600 10=00000000b3b3d28d 18=0000000080050000 26=0000000080092478
+03=0000000000000000 11=000000009ddffe40 19=0000000080052146 27=0000000033b3d285
+04=ffffffffffffff88 12=0000000024000224 20=000000008000afb8 28=0000000000000006
+05=0000000080092480 13=0000000002000000 21=0000000000000006 29=00000000a6c91438
+06=000000000008e9a0 14=0000000000000000 22=0000000000000100 30=00000000d8893533
+07=000000008008e2c0 15=0000000000000000 23=0000000000000000 31=000000008008de10
+
+STACK DUMP:
+0x8001dbf0 --> 0x8001dafc --> 0x8000a908 --> 0x8000b74c -->
+0x8000b0a0 --> 0x8000bbb8 --> 0x80002abc --> 0x80001f04 -->
+0x80006ef4
+
+On uart: 'x'=Xell, 'h'=Halt, 'r'=Reboot
