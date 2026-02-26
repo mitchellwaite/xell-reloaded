@@ -198,7 +198,7 @@ static void AddPartition(sec_t sector, int device, int type, int *devnum) {
 		return;	
 	}
 
-	char mount[10];
+	char mount[12];
 	sprintf(mount, "%s%i", prefix[device], *devnum);
 	char *name;
 
