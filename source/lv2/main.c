@@ -38,6 +38,8 @@
 
 #include "log.h"
 
+extern uint32_t xenos_read32(int reg);
+
 static void byte_to_rgb(uint8_t c,
                                   uint8_t *r,
                                   uint8_t *g,
@@ -302,6 +304,8 @@ int main(){
 
 	xenon_sound_init();
 
+	xenon_post_beep();
+	
 	xenon_make_it_faster(XENON_SPEED_FULL);
 
 	// FIXME: Not initializing these devices here causes an interrupt storm in
