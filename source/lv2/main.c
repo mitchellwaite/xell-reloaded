@@ -269,6 +269,8 @@ int main(){
 	printf("ANA Dump after Init:\n");
 	dumpana();
 
+	xenon_sound_init();
+
    xenon_get_logical_nand_data(&enableCustomColours, 0x5F, 0x1);
 
    if(enableCustomColours)
@@ -301,8 +303,6 @@ int main(){
    console_clrscr();
 
   	do_asciiart();
-
-	xenon_sound_init();
 
 	xenon_post_beep();
 	
