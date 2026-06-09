@@ -40,15 +40,34 @@
 
 void do_asciiart()
 {
-	char copyrightString[0x36];
+	char copyrightString[0x38] = {'\0'};
 
 	char *p = asciiart;
 	while (*p)
 		console_putch(*p++);
 	printf(asciitail);
 
-	xenon_get_logical_nand_data(copyrightString, 0x12, 0x36);
-	printf("    Copyright (C) %s\n\n",copyrightString);
+	xenon_get_logical_nand_data(copyrightString, 0x10, 0x38);
+
+	if(copyrightString[0] == 0x00)
+	{
+		// Copyright string was NULL or we're in a situation where xenon_get_logical_nand_data
+		// didn't return anything. No need to print anything more to the console.
+		return;
+	}
+	else if(copyrightString[0] == 0xA9)
+	{
+		// Copyright string is encoded as Windows-1252, but the XeLL font is CP437
+		// and as such, we don't have the copyright symbol. If the first character
+		// of the copyright string is 0xA9 (1252 copyright symbol), print out the
+		// string with a prefix similar to what we'd see in a CP437 BIOS output
+		printf("    Copyright (C)%.55s\n\n",copyrightString + 1); 
+	}
+	else
+	{
+		// If no copyright symbol exists, print out the entire string as-is
+		printf("    %.56s\n\n",copyrightString);
+	}
 }
 
 void dumpana() {
