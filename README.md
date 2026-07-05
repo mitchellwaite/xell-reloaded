@@ -29,7 +29,7 @@ It's made to boot Linux, so it contains a flat device tree for Linux. However, i
 * Shows a user controllable menu for the parsed bootentries 
   xell user prompt - by Georg Lukas "Ge0rg" <georg@op-co.de>
 
-# HOW TO USE
+# How to use
 
 XeLL Reloaded checks for ELF/UpdXeLL/Kboot-config or updflash.bin in the following order:
 
@@ -69,7 +69,7 @@ xenon.elf/xenon.z/vmlinux can be either gzipped or bare ELF32 binaries - LINUX o
 There's also a HTTP Server running while XeLL searches for executable binaries.
 It can serve the CPUKey/DVDKey and the console's flashdump.
 
-# UPDATING XELL
+# Updating XeLL
 
 1. Rename the appropriate XeLL-binary to "updxell.bin". 
 2. Supply the updxell.bin file to XeLL via USB/DVD/HDD or TFTP
@@ -83,7 +83,7 @@ updxell.bin doesn't get found / updxell process doesn't start:
 updxell function reports that no XeLL binary was found in NAND:
 --Either your XeLL in NAND is too old or it's not a XeLL Reloaded binary - You have to rebuild your whole hackimage with a recent XeLL.
 
-# FLASHING NAND
+# Flashing NAND
 
 1. Rename the new (already remapped) flashimage to "updflash.bin"
 2. Supply the updflash.bin file to XeLL via USB/DVD/HDD
@@ -95,7 +95,7 @@ updxell function reports that no XeLL binary was found in NAND:
 XBox does not boot properly after flashing the NAND:
 --Either your image wasn't properly remapped or you made something wrong while building the image
 
-# USING KBOOT.CONF
+# Using kboot.conf
 
 1. Read and understand the kboot.conf.sample which is part of every XeLL release with kboot-support
 2. Modify the file to your needs
@@ -128,21 +128,13 @@ kboot.conf gets found but it doesn't show bootentries or autoloads a bootentry:
 --Also take care of using a texteditor which doesnt automatically break lines if they are too long (will break bootentries), also it shouldn't
 modificate the encoding and lineendings of the config!
 
-# BUILDING
-(Tested with libxenon commit [45d04e8ae307749ce298fc222c528b9bc8e9e5a0](https://github.com/Free60Project/libxenon/commit/45d04e8ae307749ce298fc222c528b9bc8e9e5a0) and Debian 12)
-
+# Building
 1. Install the libxenon sdk making sure to export the correct environment variables following the [libxenon repository steps](https://github.com/Free60Project/libxenon).
 2. Run `make` in the root of this repository to build all versions of XeLL-Reloaded.
 - To build a specific version of XeLL-Reloaded run `make <target>`. Replace `<target>` with a XeLL-Reloaded option from the list below.
 
-```
-JTAG XeLL:
-xell-1f.bin
-xell-2f.bin
-xell-1f_cygnos_demon.bin
-xell-2f_cygnos_demon.bin
+* RGH XeLL: `xell-gggggg.bin`
+* JTAG/BadUpdate XeLL: `xell-2f.bin`
+    * Old-style JTAG images: `xell-1f.bin`
 
-RGH XeLL
-xell-gggggg.bin
-xell-gggggg_cygnos_demon.bin
-```
+For other varients of XeLL-Reloaded please refer to the [Makefile](/Makefile)
