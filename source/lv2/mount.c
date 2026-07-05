@@ -198,8 +198,8 @@ static void AddPartition(sec_t sector, int device, int type, int *devnum) {
 		return;	
 	}
 
-	char mount[10];
-	sprintf(mount, "%s%i", prefix[device], *devnum);
+	char mount[16];
+	snprintf(mount, sizeof(mount), "%s%i", prefix[device], *devnum);
 	char *name;
 
 	switch (type) {

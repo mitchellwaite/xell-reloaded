@@ -45,7 +45,7 @@ dist: clean all
 	@cp stage2.elf32 release/
 	@cp AUTHORS release/
 	@cp CHANGELOG release/
-	@cp README release/
+	@cp README.md release/
 	@cd release; tar czvf XeLL_Reloaded-2stages-$(GITREV).tar.gz *; mv *.tar.gz ..
 	@rm -rf release 
 	@$(MAKE) clean
