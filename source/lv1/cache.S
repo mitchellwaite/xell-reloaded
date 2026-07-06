@@ -11,7 +11,7 @@ dcache_flush:
 	add %r4, %r4, %r3
 
 1:
-	dcbst %r0, %r5
+	dcbst 0, %r5
 	addic %r5, %r5, CACHELINE_SIZE /* also clears carry */
 	subic. %r4, %r4, CACHELINE_SIZE
 	bge 1b
@@ -28,7 +28,7 @@ dcache_inv:
 	add %r4, %r4, %r3
 
 1:
-	dcbf %r0, %r5
+	dcbf 0, %r5
 	addic %r5, %r5, CACHELINE_SIZE /* also clears carry */
 	subic. %r4, %r4, CACHELINE_SIZE
 	bge 1b
@@ -45,8 +45,8 @@ flush_code:
 	add %r4, %r4, %r3
 
 1:
-	dcbst %r0, %r5
-	icbi %r0, %r5
+	dcbst 0, %r5
+	icbi 0, %r5
 	addic %r5, %r5, CACHELINE_SIZE /* also clears carry */
 	subic. %r4, %r4, CACHELINE_SIZE
 	bge 1b
