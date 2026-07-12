@@ -19,6 +19,8 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #include <lwip/ip_addr.h>
 #include <network/network.h>
 #include <xenos/xenos.h>
+#include <xenos/xe.h>
+#include <xenos/edram.h>
 #include <ppc/timebase.h>
 #include <elf/elf.h>
 #include <usb/usbmain.h>
@@ -71,7 +73,7 @@ void split(char *buf, char **left, char **right, char delim)
 
 int kboot_loadfile(char *filename, int type, char *kbootpath)
 {
-	int ret;
+	int ret = 0;
 
 	char relativepath[255] = {'\0'};
 
@@ -166,6 +168,16 @@ void kboot_set_config(void)
 		printf("Speeding up CPU\n");
 		xenon_make_it_faster(conf.speedup);
 	}
+
+	if(conf.edram_init > 0)
+	{
+		printf(" * Initializing eDRAM\n");
+
+		struct XenosDevice xe;
+
+		Xe_Init(&xe);
+		edram_init(&xe);
+	}
         
 }
 
@@ -203,10 +215,14 @@ int kbootconf_parse(void)
 		char *left, *right;
 
 		split(lp, &left, &right, '=');
-                if (!right) {
-                    if(strncmp(left,"#",1) && strncmp(left,";",1))
-			PRINT_WARN("kboot.conf: parse error (line %d)\n", lineno);
-                    goto nextline;
+      
+		if (!right) {
+			if(strncmp(left,"#",1) && strncmp(left,";",1) && strncmp(left,"\n",1) && strncmp(left,"\r",1))
+			{
+				PRINT_WARN("kboot.conf: parse error (line %d)\n", lineno);
+			}
+
+			goto nextline;
 		}
 
 		while(*right == '"' || *right == '\'')
@@ -227,6 +243,8 @@ int kbootconf_parse(void)
 			droot = right;
 		} else if (!strcmp(left, "videomode")) {
 			conf.videomode = atoi(right);
+		} else if (!strcmp(left, "edram_init")) {
+			conf.edram_init = atoi(right);
 		} else if (!strcmp(left, "speedup")) {
 			conf.speedup = atoi(right);
                 } else if (!strcmp(left, "tftp_server")) {

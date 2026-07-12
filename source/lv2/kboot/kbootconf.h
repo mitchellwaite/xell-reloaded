@@ -18,19 +18,20 @@ struct kbootkernel {
 	char *kernel;
 	char *initrd;
 	char *root;
-        char *video;
+	char *video;
 	char *parameters;
 };
 
 struct kbootconf {
 	int timeout;
-        int videomode;
+	int videomode;
+	int edram_init;
 	int speedup;
 	char *msgfile;
-        char *tftp_server;
-        char *ipaddress;
-        char *netmask;
-        char *gateway;
+	char *tftp_server;
+	char *ipaddress;
+	char *netmask;
+	char *gateway;
 	int default_idx;
 	int num_kernels;
 	struct kbootkernel kernels[MAX_KERNELS];
