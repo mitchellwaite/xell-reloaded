@@ -479,4 +479,3 @@ char *boot_file_name() {
   return "/tftpboot/xenon";
 }
 
-#endif

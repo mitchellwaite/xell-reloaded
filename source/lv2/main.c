@@ -252,8 +252,7 @@ void synchronize_timebases()
 int main(){
 	LogInit();
 	int i;
-   int rc = 0;
-	int consoleType = 0;
+	int rc = 0;
 
 	printf("ANA Dump before Init:\n");
 	dumpana();
@@ -283,13 +282,13 @@ int main(){
 	xenon_sound_init();
 
 #ifdef SWIZZY_THEME
-	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
+	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
 #elif defined XTUDO_THEME
-	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_PINK); // Pink text on black bg
+	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_PINK); // Pink text on black bg
 #elif defined DEFAULT_THEME
-	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREY); // White text on blue bg
+	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREY); // White text on blue bg
 #else
-	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
+	console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
 #endif
 
 	console_init();
