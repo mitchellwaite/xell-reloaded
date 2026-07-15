@@ -175,7 +175,7 @@ int kbootconf_parse(void)
 	char *dflt = NULL;
 	char *dinitrd = NULL;
 	char *droot = NULL;
-        char *dvideo = NULL;
+	char *dvideo = NULL;
 	char tmpbuf[MAX_CMDLINE_SIZE];
 	int lineno = 1;
 	int i;
@@ -183,7 +183,7 @@ int kbootconf_parse(void)
 	memset(&conf, 0, sizeof(conf));
 
 	conf.timeout = -1;
-        conf.videomode = -1;
+	conf.videomode = -1;
 	conf.speedup = 0;
 
 	while(*lp) {
@@ -203,10 +203,17 @@ int kbootconf_parse(void)
 		char *left, *right;
 
 		split(lp, &left, &right, '=');
-                if (!right) {
-                    if(strncmp(left,"#",1) && strncmp(left,";",1))
-			PRINT_WARN("kboot.conf: parse error (line %d)\n", lineno);
-                    goto nextline;
+		
+		if (!right) {
+			if(strncmp(left,"#",1) &&
+				strncmp(left,";",1) &&
+				strncmp(left,"\n",1) &&
+				strncmp(left,"\r",1))
+			{
+				PRINT_WARN("kboot.conf: parse error (line %d)\n", lineno);
+			}
+
+			goto nextline;
 		}
 
 		while(*right == '"' || *right == '\'')
@@ -229,15 +236,15 @@ int kbootconf_parse(void)
 			conf.videomode = atoi(right);
 		} else if (!strcmp(left, "speedup")) {
 			conf.speedup = atoi(right);
-                } else if (!strcmp(left, "tftp_server")) {
+		} else if (!strcmp(left, "tftp_server")) {
 			conf.tftp_server = right;
-                } else if (!strcmp(left, "ip")) {
+		} else if (!strcmp(left, "ip")) {
 			conf.ipaddress = right;
-                } else if (!strcmp(left, "netmask")) {
+		} else if (!strcmp(left, "netmask")) {
 			conf.netmask = right;
-                } else if (!strcmp(left, "gateway")) {
+		} else if (!strcmp(left, "gateway")) {
 			conf.gateway = right;
-                } else if (!strncmp(left, "#", 1)||!strncmp(left, ";", 1)) {
+		} else if (!strncmp(left, "#", 1)||!strncmp(left, ";", 1)) {
 			goto nextline;
 		} else {
 			if (strlen(right) > MAX_CMDLINE_SIZE) {
@@ -245,8 +252,8 @@ int kbootconf_parse(void)
 				goto nextline;
 			}
 			conf.kernels[conf.num_kernels].label = left;
-                        conf.kernels[conf.num_kernels].kernel = right;
-                        
+			conf.kernels[conf.num_kernels].kernel = right;
+
 			char *p = strchr(right, ' ');
 			if (!p) {
 				// kernel, no arguments
@@ -279,7 +286,7 @@ int kbootconf_parse(void)
 					root = val;
 				} else if (!strcmp(arg, "initrd")) {
 					initrd = val;
-                                } else {
+				} else {
 					strlcat(tmpbuf, arg, sizeof(tmpbuf));
 					strlcat(tmpbuf, "=", sizeof(tmpbuf));
 					strlcat(tmpbuf, val, sizeof(tmpbuf));
@@ -321,10 +328,10 @@ nextline:
 		if (dflt && !strcmp(conf.kernels[i].label, dflt))
 			conf.default_idx = i;
 		if (!conf.kernels[i].initrd && dinitrd)
-		    conf.kernels[i].initrd = dinitrd;
+			conf.kernels[i].initrd = dinitrd;
 		if (!conf.kernels[i].root && droot)
 			conf.kernels[i].root = droot;
-                if (!conf.kernels[i].video && dvideo)
+		if (!conf.kernels[i].video && dvideo)
 			conf.kernels[i].video = dvideo;
 //		if (conf.kernels[i].initrd && !conf.kernels[i].root)
 //			conf.kernels[i].root = "/dev/ram0";
@@ -368,7 +375,7 @@ nextline:
 
 	printf("=========================\n");
 #endif
-            
+
 	return conf.num_kernels;
 }
 
