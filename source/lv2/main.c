@@ -38,6 +38,19 @@
 
 #include "log.h"
 
+static const char *consoleNames[] =
+{
+	"Xenon",
+	"Zephyr",
+	"Falcon",
+	"Jasper",
+	"Trinity",
+	"Corona",
+	"Corona MMC",
+	"Winchester",
+	"Winchester MMC",
+};
+
 void do_asciiart()
 {
 	char *p = asciiart;
@@ -89,6 +102,7 @@ void synchronize_timebases()
 int main(){
 	LogInit();
 	int i;
+	int consoleType = 0;
 
 	printf("ANA Dump before Init:\n");
 	dumpana();
@@ -179,7 +193,11 @@ int main(){
 	/*int device_list_size = */ // findDevices();
 
 	/* display some cpu info */
-	printf(" * CPU PVR: %08x\n", mfspr(287));
+	consoleType = xenon_get_console_type();
+
+	printf("\n * Console Type: %s (PVR %08x)\n\n",
+			 (consoleType >= 0 && consoleType <= 7) ? consoleNames[consoleType] : "Unknown",
+			 mfspr(287));
 
 #ifndef NO_PRINT_CONFIG
 	printf(" * FUSES - write them down and keep them safe:\n");
