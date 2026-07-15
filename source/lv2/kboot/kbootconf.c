@@ -69,20 +69,42 @@ void split(char *buf, char **left, char **right, char delim)
 	}
 }
 
-int kboot_loadfile(char *filename, int type)
+int kboot_loadfile(char *filename, int type, char *kbootpath)
 {
-	int ret;
+	int ret = 0;
 
-	#ifndef NO_TFTP
-		/* If filename includes ':' it's seen as valid mountname */
-		if(strrchr(filename,':')!= NULL)
-			ret = try_load_file(filename,type);
-		else
-			ret = boot_tftp(boot_server_name(),filename,type);
-	#else
+	char relativepath[255] = {'\0'};
+
+	/* If filename includes ':' it's seen as valid mountname */
+	if(strrchr(filename,':')!= NULL)
+	{
 		ret = try_load_file(filename,type);
-	#endif
-		
+	}
+	else
+	{
+		// If a kboot path was provided, try loading the file
+		// from the same mount path as the kboot.conf
+		if(NULL != kbootpath)
+		{
+			// Copy the prefix (e.g. "uda0:/", "dvd0:/", and then concatenate
+			// the filename. If the filename begins with /, copy one less
+			// character from the prefix so we don't have a double slash
+			memcpy(relativepath, kbootpath, (filename[0] == '/') ? 5 : 6);
+			strncat(relativepath, filename, sizeof(relativepath) - 1);
+
+			ret = try_load_file(relativepath, type);
+		}
+
+#ifndef NO_TFTP
+		// If we failed to load the file, or a kbootpath wasn't provided,
+		// try to boot the provided filename from TFTP
+		if(ret || NULL == kbootpath)
+		{
+			ret = boot_tftp(boot_server_name(),filename,type);
+		}
+#endif
+	}
+
 	return ret;
 }
 
@@ -132,7 +154,6 @@ void kboot_set_config(void)
            network_print_config();
         }
 #endif
-        
         if(conf.videomode > VIDEO_MODE_AUTO && conf.videomode < VIDEO_MODE_COUNT && oldvideomode != conf.videomode){
             oldvideomode = conf.videomode;
             xenos_init(conf.videomode);
@@ -153,7 +174,7 @@ int kbootconf_parse(void)
 	char *dflt = NULL;
 	char *dinitrd = NULL;
 	char *droot = NULL;
-        char *dvideo = NULL;
+	char *dvideo = NULL;
 	char tmpbuf[MAX_CMDLINE_SIZE];
 	int lineno = 1;
 	int i;
@@ -161,7 +182,7 @@ int kbootconf_parse(void)
 	memset(&conf, 0, sizeof(conf));
 
 	conf.timeout = -1;
-        conf.videomode = -1;
+	conf.videomode = -1;
 	conf.speedup = 0;
 
 	while(*lp) {
@@ -181,10 +202,17 @@ int kbootconf_parse(void)
 		char *left, *right;
 
 		split(lp, &left, &right, '=');
-                if (!right) {
-                    if(strncmp(left,"#",1) && strncmp(left,";",1))
-			PRINT_WARN("kboot.conf: parse error (line %d)\n", lineno);
-                    goto nextline;
+		
+		if (!right) {
+			if(strncmp(left,"#",1) &&
+				strncmp(left,";",1) &&
+				strncmp(left,"\n",1) &&
+				strncmp(left,"\r",1))
+			{
+				PRINT_WARN("kboot.conf: parse error (line %d)\n", lineno);
+			}
+
+			goto nextline;
 		}
 
 		while(*right == '"' || *right == '\'')
@@ -207,15 +235,15 @@ int kbootconf_parse(void)
 			conf.videomode = atoi(right);
 		} else if (!strcmp(left, "speedup")) {
 			conf.speedup = atoi(right);
-                } else if (!strcmp(left, "tftp_server")) {
+		} else if (!strcmp(left, "tftp_server")) {
 			conf.tftp_server = right;
-                } else if (!strcmp(left, "ip")) {
+		} else if (!strcmp(left, "ip")) {
 			conf.ipaddress = right;
-                } else if (!strcmp(left, "netmask")) {
+		} else if (!strcmp(left, "netmask")) {
 			conf.netmask = right;
-                } else if (!strcmp(left, "gateway")) {
+		} else if (!strcmp(left, "gateway")) {
 			conf.gateway = right;
-                } else if (!strncmp(left, "#", 1)||!strncmp(left, ";", 1)) {
+		} else if (!strncmp(left, "#", 1)||!strncmp(left, ";", 1)) {
 			goto nextline;
 		} else {
 			if (strlen(right) > MAX_CMDLINE_SIZE) {
@@ -223,8 +251,8 @@ int kbootconf_parse(void)
 				goto nextline;
 			}
 			conf.kernels[conf.num_kernels].label = left;
-                        conf.kernels[conf.num_kernels].kernel = right;
-                        
+			conf.kernels[conf.num_kernels].kernel = right;
+
 			char *p = strchr(right, ' ');
 			if (!p) {
 				// kernel, no arguments
@@ -257,7 +285,7 @@ int kbootconf_parse(void)
 					root = val;
 				} else if (!strcmp(arg, "initrd")) {
 					initrd = val;
-                                } else {
+				} else {
 					strlcat(tmpbuf, arg, sizeof(tmpbuf));
 					strlcat(tmpbuf, "=", sizeof(tmpbuf));
 					strlcat(tmpbuf, val, sizeof(tmpbuf));
@@ -299,10 +327,10 @@ nextline:
 		if (dflt && !strcmp(conf.kernels[i].label, dflt))
 			conf.default_idx = i;
 		if (!conf.kernels[i].initrd && dinitrd)
-		    conf.kernels[i].initrd = dinitrd;
+			conf.kernels[i].initrd = dinitrd;
 		if (!conf.kernels[i].root && droot)
 			conf.kernels[i].root = droot;
-                if (!conf.kernels[i].video && dvideo)
+		if (!conf.kernels[i].video && dvideo)
 			conf.kernels[i].video = dvideo;
 //		if (conf.kernels[i].initrd && !conf.kernels[i].root)
 //			conf.kernels[i].root = "/dev/ram0";
@@ -346,7 +374,7 @@ nextline:
 
 	printf("=========================\n");
 #endif
-            
+
 	return conf.num_kernels;
 }
 
@@ -456,7 +484,7 @@ printf("\nTimeout.\n");
 return defaultchoice;
 }
 
-int try_kbootconf(void * addr, unsigned len){
+int try_kbootconf(void * addr, unsigned len, char *kbootpath){
     int ret;
     if (len > MAX_KBOOTCONF_SIZE)
     {
@@ -499,7 +527,7 @@ int try_kbootconf(void * addr, unsigned len){
     if (conf.kernels[boot_entry].initrd)
     {
         printf("Loading initrd ... ");
-        ret = kboot_loadfile(conf.kernels[boot_entry].initrd,TYPE_INITRD);
+        ret = kboot_loadfile(conf.kernels[boot_entry].initrd,TYPE_INITRD, kbootpath);
         if (ret < 0) {
 			printf("Failed!\nAborting!\n");
 			return -1;
@@ -509,7 +537,7 @@ int try_kbootconf(void * addr, unsigned len){
     }
 
     printf("Loading kernel ...\n");
-    ret = kboot_loadfile(conf.kernels[boot_entry].kernel,TYPE_ELF);
+    ret = kboot_loadfile(conf.kernels[boot_entry].kernel,TYPE_ELF, kbootpath);
     if (ret < 0)
 		printf("Failed!\n");
                 

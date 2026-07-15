@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <xetypes.h>
 
+#include <lwip/init.h>
 #include <lwip/mem.h>
 #include <lwip/memp.h>
 #include <lwip/sys.h>
@@ -34,7 +35,12 @@
 #define TFTP_OPCODE_ERROR 5
 #define TFTP_OPCODE_OACK 6
 
-#ifndef NO_TFTP
+#if LWIP_VERSION_MAJOR == 1
+   #define netif_dhcp_data(x) (x)->dhcp
+   #define TFTP_RECV_CONST_IP_ADDR_T ip_addr_t
+#else
+   #define TFTP_RECV_CONST_IP_ADDR_T const ip_addr_t
+#endif
 
 typedef struct {
   int state;
@@ -157,7 +163,7 @@ static int send_error(struct udp_pcb *pcb, ip_addr_t server_addr,
 }
 
 static void tftp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p,
-                      struct ip_addr *addr, u16_t port) {
+                      TFTP_RECV_CONST_IP_ADDR_T *addr, u16_t port) {
   tftp_state_t *tftp_state = arg;
   unsigned char *d = p->payload;
   if (!addr || addr->addr != tftp_state->server_addr.addr) {
@@ -275,7 +281,7 @@ static void tftp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p,
   pbuf_free(p);
 }
 
-int do_tftp(void *target, int maxlen, struct ip_addr server, const char *file) {
+int do_tftp(void *target, int maxlen, ip_addr_t server, const char *file) {
   int rc = 0;
   uint64_t start = mftb();
 
@@ -406,7 +412,7 @@ int boot_tftp(ip_addr_t server_address, const char *tftp_bootfile,
     elf_setArgcArgv(argc, argv);
   }
 
-  ret = launch_file(elf_raw, res, filetype);
+  ret = launch_file(elf_raw, res, filetype, NULL);
 
   free(elf_raw);
   return ret;
@@ -452,10 +458,10 @@ ip_addr_t boot_server_name() {
     return ret;
   }
 
-  if (netif.dhcp) {
+  if (netif_dhcp_data(&netif)) {
     // DHCP server.
-    if (netif.dhcp->server_ip_addr.addr != 0x00000000) {
-      return netif.dhcp->server_ip_addr;
+    if (netif_dhcp_data(&netif)->server_ip_addr.addr != 0x00000000) {
+      return netif_dhcp_data(&netif)->server_ip_addr;
     } else if (netif.gw.addr != 0x00000000) {
       return netif.gw;
     }

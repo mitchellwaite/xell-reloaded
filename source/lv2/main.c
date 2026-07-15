@@ -60,7 +60,7 @@ void do_asciiart()
 	//while (*p)
 	//	console_putch(*p++);
 	//printf(asciitail);
-
+   int consoleType = xenon_get_console_type();
    char * consoleRev = "";
    char * processorRev = "";
    char copyrightString[0x36];
@@ -101,37 +101,48 @@ void do_asciiart()
       }
    }
 
-   if (xenon_get_console_type() == 0) {
-	    consoleRev = "Xenon";
-       processorRev = "Waternoose";
-    } else if (xenon_get_console_type() == 1) {
-	    consoleRev = "Zephyr";
-       processorRev = "Waternoose";
-    } else if (xenon_get_console_type() == 2) {
-	   consoleRev = "Falcon";
-      processorRev = "Loki";
-    } else if (xenon_get_console_type() == 3) {
-	    consoleRev = "Jasper";
-       processorRev = "Loki";
-    } else if (xenon_get_console_type() == 4) {
-	    consoleRev = "Trinity";
-       processorRev = "Vejle";
-    } else if (xenon_get_console_type() == 5) {
-	    consoleRev = "Corona";
-       processorRev = "Vejle";
-    } else if (xenon_get_console_type() == 6) {
-	    consoleRev = "Corona MMC";
-       processorRev = "Vejle";
-    } else if (xenon_get_console_type() == 7) {
-	    consoleRev = "Winchester";
-       processorRev = "Oban";
-    } else if (xenon_get_console_type() == 8) {
-	    consoleRev = "Winchester MMC";
-       processorRev = "Oban";
-    } else{
-	    consoleRev = "Unknown";
-       processorRev = "Unknown";
-    }
+   switch(consoleType)
+   {
+      case 0: 
+         consoleRev = "Xenon";
+         processorRev = "Waternoose";
+         break;
+      case 1:
+         consoleRev = "Zephyr";
+         processorRev = "Waternoose";
+         break;
+      case 2:
+	      consoleRev = "Falcon";
+         processorRev = "Loki";
+         break;
+      case 3:
+	      consoleRev = "Jasper";
+         processorRev = "Loki";
+         break;
+      case 4:
+	      consoleRev = "Trinity";
+         processorRev = "Vejle";
+         break;
+      case 5:
+	      consoleRev = "Corona";
+         processorRev = "Vejle";
+         break;
+      case 6:
+	      consoleRev = "Corona MMC";
+         processorRev = "Vejle";
+         break;
+      case 7:
+	      consoleRev = "Winchester";
+         processorRev = "Oban";
+         break;
+      case 8:
+	      consoleRev = "Winchester MMC";
+         processorRev = "Oban";
+         break;
+      default:
+	      consoleRev = "Unknown";
+         processorRev = "Unknown";
+   }
 
    printf("Microsoft %s ACPI BIOS Revision " VERSION "\n\n", consoleRev);
    printf("Microsoft %s %08x 3.2GHz Processor\n", processorRev, mfspr(287));
@@ -242,7 +253,7 @@ int main(){
 	LogInit();
 	int i;
    int rc = 0;
-   char enableCustomColours = 0;
+	int consoleType = 0;
 
 	printf("ANA Dump before Init:\n");
 	dumpana();
@@ -271,20 +282,6 @@ int main(){
 
 	xenon_sound_init();
 
-   xenon_get_logical_nand_data(&enableCustomColours, 0x5F, 0x1);
-
-   if(enableCustomColours)
-   {
-      uint32_t bgcolour = 0;
-      uint32_t fgcolour = 0;
-
-      xenon_get_logical_nand_data(&bgcolour, 0x50, 0x4);
-      xenon_get_logical_nand_data(&fgcolour, 0x54, 0x4);
-
-      console_set_colors(bgcolour, fgcolour);
-   }
-   else
-   {
 #ifdef SWIZZY_THEME
 	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_ORANGE); // Orange text on black bg
 #elif defined XTUDO_THEME
@@ -294,7 +291,6 @@ int main(){
 #else
 	   console_set_colors(CONSOLE_COLOR_BLACK,CONSOLE_COLOR_GREEN); // Green text on black bg
 #endif
-   }
 
 	console_init();
 
@@ -535,7 +531,6 @@ int main(){
 		#endif
 
       usb_do_poll();
-      mount_all_devices();
       console_open();
 
       fileloop();
