@@ -71,7 +71,7 @@ void split(char *buf, char **left, char **right, char delim)
 
 int kboot_loadfile(char *filename, int type, char *kbootpath)
 {
-	int ret;
+	int ret = 0;
 
 	char relativepath[255] = {'\0'};
 

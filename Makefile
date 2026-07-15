@@ -9,7 +9,7 @@ LV1_DIR=source/lv1
 GITREV='$(shell git describe --tags)'
 
 # Configuration
-CFLAGS = -Wall -Os -I$(LV1_DIR) -ffunction-sections -fdata-sections \
+CFLAGS = -Wall -Werror -Os -I$(LV1_DIR) -ffunction-sections -fdata-sections \
 	-m64 -mno-toc -DBYTE_ORDER=BIG_ENDIAN -mno-altivec -D$(CURRENT_TARGET) $(CYGNOS_DEF)
 
 AFLAGS = -Iinclude -m64
