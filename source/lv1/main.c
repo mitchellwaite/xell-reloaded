@@ -49,6 +49,12 @@ static inline void  std(volatile void *addr, uint64_t v)
 	asm volatile ("std %1, 0(%0)" : : "b" (addr), "r" (v));
 }
 
+/* std followed by eieio, as the 1838 DD1 HV does for every IIC store. */
+static inline void std_eieio(volatile void *addr, uint64_t v)
+{
+	asm volatile ("std %1, 0(%0)\n\teieio" : : "b" (addr), "r" (v) : "memory");
+}
+
 static inline uint32_t bswap_32(uint32_t t)
 {
 	return ((t & 0xFF) << 24) | ((t & 0xFF00) << 8) | ((t & 0xFF0000) >> 8) | ((t & 0xFF000000) >> 24);
@@ -175,10 +181,22 @@ int get_online_processors(void)
 	return res;
 }
 
+/* Wait up to ms milliseconds for every CPU in mask to come online; returns the online mask. */
+static int wait_online(int mask, int ms)
+{
+	int t;
+	for (t = 0; t < ms; ++t) {
+		if ((get_online_processors() & mask) == mask)
+			break;
+		mdelay(1);
+	}
+	return get_online_processors();
+}
+
 void place_jump(void *addr, void *_target)
 {
 	unsigned long target = (unsigned long)_target;
-	dcache_flush(addr - 0x80, 0x100);
+	/* Store first, then flush only the lines written, as cd_xell does. */
 	*(volatile uint32_t*)(addr - 0x18 + 0) = 0x3c600000 | ((target >> 48) & 0xFFFF);
 	*(volatile uint32_t*)(addr - 0x18 + 4) = 0x786307c6;
 	*(volatile uint32_t*)(addr - 0x18 + 8) = 0x64630000 | ((target >> 16) & 0xFFFF);
@@ -187,7 +205,7 @@ void place_jump(void *addr, void *_target)
 	*(volatile uint32_t*)(addr - 0x18 + 0x14) = 0x4e800021;
 	flush_code(addr-0x18, 0x18);
 	*(volatile uint32_t*)(addr + 0) = 0x4bffffe8;
-	flush_code(addr, 0x80);
+	flush_code(addr, 4);
 }
 
 void init_soc(void)
@@ -340,34 +358,47 @@ int start(int pir, unsigned long hrmor, unsigned long pvr)
 		std(sec_hold_addrs + 0x70, OCR_LAND_MAGIC);
 		std(sec_hold_addrs + 0x78, OCR_LAND_MAGIC);
 
-		// startup threads
-		std(irq_cntrl + 0x2070, 0x7c);
-		std(irq_cntrl + 0x2008, 0);
-		std(irq_cntrl + 0x2000, 4);
+		// read a slot back, then sync, as the DD1 HV does
+		(void)ld(sec_hold_addrs + 0x70);
+		asm volatile ("sync" : : : "memory");
 
-		std(irq_cntrl + 0x4070, 0x7c);
-		std(irq_cntrl + 0x4008, 0);
-		std(irq_cntrl + 0x4000, 0x10);
+		// startup threads (eieio after each IIC store, as the DD1 HV does)
+		std_eieio(irq_cntrl + 0x2070, 0x7c);
+		std_eieio(irq_cntrl + 0x2008, 0);
+		std_eieio(irq_cntrl + 0x2000, 4);
 
-		std(irq_cntrl + 0x10, 0x140078);
+		std_eieio(irq_cntrl + 0x4070, 0x7c);
+		std_eieio(irq_cntrl + 0x4008, 0);
+		std_eieio(irq_cntrl + 0x4000, 0x10);
 
+		// Wake one core at a time, each with a 100 ms timeout: thread 1 via
+		// CTRL, then threads 2 and 4 by IPI (each starts its sibling itself).
+		// This is the order verified on DD1. The single IPI 0x140078 followed
+		// by CTRL (as the HV does) has not been retried since the
+		// other_threads_startup fixes in startup.S.
 		mtspr(152, 0xc00000);  // CTRL.TE{0,1} = 11
+		wait_online(0x02, 100);
 
-		while (get_online_processors() != 0x3f)
-		{
-			printf("CPUs online: %02x..\n", get_online_processors());
-			mdelay(10);
-		}
+		asm volatile ("sync" : : : "memory");
+		std_eieio(irq_cntrl + 0x10, 0x040078);
+		wait_online(0x0c, 100);
+
+		asm volatile ("sync" : : : "memory");
+		std_eieio(irq_cntrl + 0x10, 0x100078);
+		wait_online(0x30, 100);
+
+		if (get_online_processors() != 0x3f)
+			printf(" ! not all CPUs online (%02x), continuing anyway\n", get_online_processors());
 
 		// enable IRQ controllers
 
 		int i;
 		for(i=0;i<6;i++){
-			std(irq_cntrl + i*0x1000 + 0x70, 0x7c);
-			std(irq_cntrl + i*0x1000 + 8, 0x7c);
-			std(irq_cntrl + i*0x1000, 1<<i); 
+			std_eieio(irq_cntrl + i*0x1000 + 0x70, 0x7c);
+			std_eieio(irq_cntrl + i*0x1000 + 8, 0x7c);
+			std_eieio(irq_cntrl + i*0x1000, 1<<i);
 		}
- 
+
 	}
 
 	printf("CPUs online: %02x..\n", get_online_processors());

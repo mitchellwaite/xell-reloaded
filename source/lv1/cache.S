@@ -1,6 +1,11 @@
 #define CACHELINE_SIZE 128
 #define CACHELINE_SIZE_LOG2 7
 
+/*
+ * Each loop touches ceil((addr & 127 + len) / 128) lines. It used to
+ * branch with bge, which touched one line past the end of the range.
+ */
+
 .globl dcache_flush
 dcache_flush:
 		/* round down address */
@@ -14,7 +19,7 @@ dcache_flush:
 	dcbst 0, %r5
 	addic %r5, %r5, CACHELINE_SIZE /* also clears carry */
 	subic. %r4, %r4, CACHELINE_SIZE
-	bge 1b
+	bgt 1b
 	sync
 	blr
 
@@ -31,7 +36,7 @@ dcache_inv:
 	dcbf 0, %r5
 	addic %r5, %r5, CACHELINE_SIZE /* also clears carry */
 	subic. %r4, %r4, CACHELINE_SIZE
-	bge 1b
+	bgt 1b
 	sync
 	blr
 
@@ -49,7 +54,7 @@ flush_code:
 	icbi 0, %r5
 	addic %r5, %r5, CACHELINE_SIZE /* also clears carry */
 	subic. %r4, %r4, CACHELINE_SIZE
-	bge 1b
+	bgt 1b
 	sync
 	isync
 	blr

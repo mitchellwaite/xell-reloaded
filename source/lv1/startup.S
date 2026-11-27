@@ -149,13 +149,67 @@ other_threads_waiter:
 
 .globl other_threads_startup
 other_threads_startup:
+	// Set LPCR as start_from_rom does before this thread touches anything
+	// else. On DD1 a UART access from a new thread without it froze the
+	// system; S2's 0x1FC00 stub and the 1640 HV also set LPCR bit 62 (0x2)
+	// in each thread first.
+	li	%r3, 2
+	isync
+	mtspr	lpcr, %r3
+	isync
+
 	mfspr	%r3, pir
 	andi.   %r3,%r3,1
 	cmplwi  %r3,1
 	beq	1f
 
-	bl	init_regs
-	
+	// init_regs without HID1. Even threads run this from the SRAM copy,
+	// and on DD1 writing HID1 there froze the core. The DD1 ROM and S2
+	// leave HID1's fetch bits alone in SRAM and set them on the rfid into
+	// RAM; here start_from_rom's init_regs sets HID1 from RAM.
+	or	%r2, %r2, %r2	// normal priority
+	li	%r3, 0
+	mtspr	hid0, %r3
+	sync
+	isync
+
+	li	%r3, 0x3f00
+	rldicr	%r3, %r3, 32,31
+	mtspr	hid4, %r3
+	sync
+	isync
+
+	lis	%r3, 1
+	ori	%r3,%r3, 0x8038
+	rldicr	%r3, %r3, 32,31
+	mtspr	hid6, %r3
+	sync
+	isync
+
+	lis	%r3, 0x1d
+	mtspr	tscr, %r3
+	sync
+	isync
+
+	li	%r3, 0x1000
+	mtspr	ttr, %r3
+	sync
+	isync
+
+	// Even threads get here from the 1BL, running HRMOR-relative (the SRAM
+	// copy at 0x200_00011000 under HRMOR 0x200_00000000). Clearing HRMOR
+	// would move the next fetch to RAM 0x11xxx, so first branch to the
+	// HRMOR-bypass alias of 3f, as the DD1 ROM, pre_bl and S2 do.
+	bl	2f
+2:	mflr	%r4
+	addi	%r4, %r4, 3f - 2b
+	mfspr	%r5, hrmor
+	add	%r4, %r4, %r5
+	li	%r5, 1
+	rldimi	%r4, %r5, 63, 0		// | 0x8000000000000000
+	mtctr	%r4
+	bctr
+3:
 	li	%r3,0
 	mtspr	hrmor,%r3
 	sync
